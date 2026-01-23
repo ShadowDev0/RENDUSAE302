@@ -1,0 +1,155 @@
+{% extends 'index.html' %}
+
+{% block body %}
+<div class="container mt-4">
+    <h3>Gestion des Machines</h3>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Actions</th>
+                <th>ID</th>
+                <th>Nom d'hôte</th>
+                <th>Adresse IP</th>
+                <th>Couleur</th> </tr>
+        </thead>
+        <tbody>
+            {% for machine in machines %}
+            <tr>
+                <td>
+                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editMachineModal{{ machine.id }}">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <a href="{{ url_for('machines_bp.delete', id=machine.id) }}" class="btn btn-sm btn-danger" 
+                       onclick="return confirm('Supprimer ce serveur ?');"><i class="bi bi-x-lg"></i></a>
+                </td>
+                <td>{{ machine.id }}</td>
+                <td>{{ machine.nom }}</td>
+                <td>{{ machine.ip }}</td>
+                <td style="background-color: {{ machine.color }}; text-align: center;">
+                    {{ machine.color }}
+                </td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="5" class="text-center">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addMachineModal">
+                        <i class="bi bi-plus-lg"></i> Ajouter un serveur
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+    <div class="row">
+         </div>
+
+
+    {% for machine in machines %}
+    <div class="modal fade" id="editMachineModal{{ machine.id }}" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Modifier : {{ machine.nom }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{ url_for('machines_bp.update', id=machine.id) }}">
+              
+              <div class="mb-3">
+                <label class="form-label">Nom (Hôte)</label>
+                <input type="text" class="form-control" value="{{ machine.nom }}" disabled>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Adresse IP</label>
+                <input type="text" name="ip" class="form-control" value="{{ machine.ip }}" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Couleur d'affichage</label>
+                <select name="color" class="form-select">
+                    {% for c in couleurs %}
+                    <option value="{{ c.hex }}" style="background-color: {{ c.hex }};" 
+                            {% if machine.color == c.hex %}selected{% endif %}>
+                        {{ c.nom }}
+                    </option>
+                    {% endfor %}
+                </select>
+              </div>
+
+              <button type="submit" class="btn btn-success">Mettre à jour</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    <div class="col-12">
+    <h4>État des clients</h4>
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Machine</th>
+                <th>Adresse IP</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for statut in server_status %}
+            <tr>
+                <td>{{ statut.nom }}</td>
+                <td>{{ statut.ip }}</td>
+                <td>
+                    {% if statut.online %}
+                        <span class="badge bg-success">EN LIGNE</span>
+                    {% else %}
+                        <span class="badge bg-danger">HORS LIGNE</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <div class="modal fade" id="addMachineModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ajouter une machine</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{ url_for('machines_bp.machines') }}">
+              <div class="mb-3">
+                <label class="form-label">Nom d'hôte</label>
+                <input type="text" class="form-control" name="nom" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Adresse IP</label>
+                <input type="text" class="form-control" name="ip" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Couleur d'affichage</label>
+                <select name="color" class="form-select">
+                    {% for c in couleurs %}
+                    <option value="{{ c.hex }}" style="background-color: {{ c.hex }};">
+                        {{ c.nom }}
+                    </option>
+                    {% endfor %}
+                </select>
+              </div>
+
+              <button type="submit" class="btn btn-success">Ajouter</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}

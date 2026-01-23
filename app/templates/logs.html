@@ -1,0 +1,85 @@
+{% extends 'index.html' %}
+
+{% block body %}
+<style>
+    {% for srv in machines %}
+    .bg-srv-{{ srv.id }} {
+        background-color: {{ srv.color }} !important; /* Priorité sur le style Bootstrap */
+        color: #000; 
+    }
+    {% endfor %}
+</style>
+
+<div class="container-fluid mt-4">
+    <h3>Visualiseur de Logs</h3>
+    <p class="text-muted">Source : <code>/var/log/syslog</code></p>
+
+    <div class="card p-3 mb-4 bg-light">
+        <form method="POST">
+            <label class="form-label fw-bold mb-2">Serveurs cibles :</label>
+            
+            <div class="d-flex flex-wrap gap-3 mb-3">
+                {% for srv in machines %}
+                <div class="form-check p-2 border rounded bg-white">
+                    <input class="form-check-input ms-1" type="checkbox" 
+                           name="machine_ids" 
+                           value="{{ srv.id }}" 
+                           id="choix_{{ srv.id }}">                    
+                    <label class="form-check-label ms-2" for="choix_{{ srv.id }}">
+                        <strong>{{ srv.nom }}</strong>
+                        <span class="badge ms-1 border border-secondary text-dark bg-srv-{{ srv.id }}">
+                            {{ srv.ip }}
+                        </span>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-arrow-repeat"></i> Récupérer les logs
+            </button>
+        </form>
+    </div>
+
+    {% if logs %}
+    <div class="text-end text-muted mb-1">
+        <small>Nombre de lignes récupérées : {{ logs|length }}</small>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 170px;">Horodatage</th>
+                    <th style="width: 130px;">Serveur</th>
+                    <th>Contenu du message</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ligne in logs %}
+                <tr>
+                    <td class="text-nowrap fw-bold" style="font-size: 0.9rem;">
+                        {{ ligne.timestamp }}
+                    </td>
+                    
+                    <td class="text-center fst-italic bg-srv-{{ ligne.machine_id }}">
+                        {{ ligne.machine }}
+                    </td>
+                    
+                    <td style="font-family: 'Courier New', monospace; font-size: 0.9rem;">
+                        {{ ligne.message }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% elif request.method == 'POST' %}
+        <div class="alert alert-warning text-center">
+            <i class="bi bi-exclamation-triangle"></i> Rien à afficher (ou erreur de connexion SSH).
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

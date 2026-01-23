@@ -1,0 +1,149 @@
+{% extends 'index.html' %}
+
+{% block body %}
+<br>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Actions</th>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>ID de rôle</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>
+
+                <button class="btn btn-sm btn-warning"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editUserModal{{ user.id }}">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                
+                {% if user.id == session['id'] %}
+                    <button class="btn btn-sm btn-secondary" disabled title="Vous ne pouvez pas vous supprimer">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                {% else %}
+                    <a href="/users/delete/{{ user.id }}" class="btn btn-sm btn-danger" 
+                       onclick="return confirm('Supprimer cet utilisateur ?');">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                {% endif %}
+                </td>
+
+            <td>{{ user.id }}</td>
+            <td>{{ user.nom }}</td>
+            <td>{{ user.role_id }}</td>
+        </tr>
+        {% endfor %}
+        {% for user in users %}
+        <div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+
+              <div class="modal-header">
+                <h5 class="modal-title">Modifier l'utilisateur #{{ user.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+
+              <div class="modal-body">
+                <form method="POST" action="/users/update/{{ user.id }}">
+
+                  <div class="mb-3">
+                    <label class="form-label">Nom</label>
+                    <input type="text" name="nom" class="form-control" value="{{ user.nom }}" required>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Mot de passe</label>
+                    <input type="text" name="mot_de_passe" class="form-control" value="{{ user.mot_de_passe }}" required>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Rôle</label>
+                    
+                    {% if user.id == session['id'] %}
+                        <input type="hidden" name="role_id" value="{{ user.role_id }}">
+                        
+                        <select class="form-select" disabled>
+                    {% else %}
+                        <select class="form-select" name="role_id">
+                    {% endif %}
+                    
+                      <option value="1" {% if user.role_id == 1 %}selected{% endif %}>Utilisateur</option>
+                      <option value="2" {% if user.role_id == 2 %}selected{% endif %}>Gestionnaire</option>
+                      <option value="3" {% if user.role_id == 3 %}selected{% endif %}>Administrateur</option>
+                    </select>
+
+                    {% if user.id == session['id'] %}
+                        <div class="form-text text-warning">
+                            <i class="bi bi-lock-fill"></i> Pour votre sécurité, vous ne pouvez pas modifier votre propre rôle ici.
+                        </div>
+                    {% endif %}
+                  </div>
+
+                  <button type="submit" class="btn btn-success">Mettre à jour</button>
+
+                </form>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        <tr>
+            <td colspan="5" class="text-center">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="bi bi-plus-lg"></i> Ajouter un utilisateur
+                </button>
+                <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="addUserLabel">Ajouter un utilisateur</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+
+                      <div class="modal-body">
+                        <form method="POST" action="/users">
+                          
+                          <div class="mb-3">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-control" name="nom" placeholder="username" required>
+                          </div>
+
+                          <div class="mb-3">
+                            <label class="form-label">Mot de passe</label>
+                            <input type="text" class="form-control" name="mot_de_passe" placeholder="password" required>
+                          </div>
+
+                          <div class="mb-3">
+                            <label class="form-label">Rôle</label>
+                            <select class="form-select" name="role_id">
+                              <option value="1">Utilisateur</option>
+                              <option value="2">Gestionnaire</option>
+                              <option value="3">Administrateur</option>
+                            </select>
+                          </div>
+
+                          <button type="submit" class="btn btn-success">Ajouter</button>
+
+                        </form>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+            </td>
+        </tr>
+
+    </tbody>
+</table>
+
+{% endblock %}
